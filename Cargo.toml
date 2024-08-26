@@ -1,0 +1,11 @@
+[package]
+name = "color_mix"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+colored = "2.0.0"
+indicatif = "0.17.8"
+inquire = "0.7.5"
+itertools = "0.13.0"
+rayon = "1.10.0"
