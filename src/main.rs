@@ -15,8 +15,6 @@ enum Error {
     CantMove,
     DiffColor,
     InvalidMove(&'static str),
-    Color2NumFail(colored::Color),
-    Num2ColorFail(u8),
 }
 
 #[derive(Eq, PartialEq, Debug, Clone)]
@@ -174,13 +172,13 @@ impl Display for GameState {
                 };
                 write!(f, "│{color_block}{color_block}│ ")?;
             }
-            writeln!(f, "")?;
+            writeln!(f)?;
         }
 
         for _ in 0..self.tubes.len() {
             write!(f, "└──┘ ")?;
         }
-        writeln!(f, "")?;
+        writeln!(f)?;
 
         for i in 0..self.tubes.len() {
             write!(f, " {:02}  ", i + 1)?;
@@ -277,7 +275,7 @@ impl GameState {
         self.tubes.iter().map(|x| x.entropy()).sum() // TODO: Check if sum or average is better
     }
 
-    fn avg_entropy(&self) -> f64 {
+    fn _avg_entropy(&self) -> f64 {
         let total_entropy = self.entropy();
         total_entropy / self.tubes.len() as f64
     }
@@ -317,10 +315,9 @@ impl Ord for QueueElement {
     }
 }
 
-fn solver(game_state: &GameState) -> Vec<Vec<(usize, usize)>> {
+fn solver(game_state: &GameState) -> Vec<(usize, usize)> {
     let mut visited = Vec::new();
     let mut queue = BinaryHeap::new();
-    let mut solution: Vec<Vec<(usize, usize)>> = vec![];
     let mut total_state = 1;
 
     queue.push(QueueElement {
@@ -335,7 +332,7 @@ fn solver(game_state: &GameState) -> Vec<Vec<(usize, usize)>> {
         .unwrap(),
     );
 
-    while !queue.is_empty() && solution.len() < 1 && progress.position() <= 5000 {
+    while !queue.is_empty() && progress.position() <= 5000 {
         progress.set_length(total_state);
         let element = queue.pop().expect("Already checked with while loop");
         let game_state = element.game_state;
@@ -346,7 +343,8 @@ fn solver(game_state: &GameState) -> Vec<Vec<(usize, usize)>> {
         // println!("{} {}", game_state.entropy(), prev_moves.len());
 
         if game_state.check_win() {
-            solution.push(prev_moves.iter().map(|(a, b)| (*a, *b)).collect());
+            progress.abandon();
+            return prev_moves.iter().map(|(a, b)| (*a, *b)).collect();
         }
 
         let all_moves = game_state.available_moves();
@@ -376,9 +374,8 @@ fn solver(game_state: &GameState) -> Vec<Vec<(usize, usize)>> {
         }
         progress.inc(1);
     }
-
     progress.abandon();
-    solution
+    vec![]
 }
 
 fn display_solution(moves: Vec<(usize, usize)>, mut game_state: GameState) {
@@ -498,6 +495,6 @@ fn main() {
 
     println!("{game_state}");
 
-    let solve = solver(&game_state).pop().unwrap();
+    let solve = solver(&game_state);
     display_solution(solve, game_state);
 }
