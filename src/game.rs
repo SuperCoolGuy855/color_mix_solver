@@ -58,6 +58,10 @@ impl Color {
     pub fn new(name: String, r: u8, g: u8, b: u8) -> Self {
         Self { name, r, g, b }
     }
+
+    pub fn get_name(&self) -> &str {
+        &self.name
+    }
 }
 
 #[derive(Eq, PartialEq, Debug, Clone)]

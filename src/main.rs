@@ -85,7 +85,7 @@ fn color_menu(mut colors: Vec<Color>) -> Vec<Color> {
 
         let color = Color::new(color_name, r, g, b);
 
-        let exist_res = colors.iter().position(|x| x == &color);
+        let exist_res = colors.iter().position(|x| x.get_name() == color.get_name());
         match exist_res {
             None => colors.push(color),
             Some(x) => {
@@ -105,7 +105,17 @@ fn color_menu(mut colors: Vec<Color>) -> Vec<Color> {
 fn main() {
     // TODO: If found, show main menu
 
-    let colors = load_color().unwrap_or_else(|| color_menu(vec![]));
+    let mut colors = load_color().unwrap_or_else(|| color_menu(vec![]));
+
+    let options = vec!["Add colors", "Solver"];
+
+    loop {
+        let select = Select::new("What would you like to do?", options.clone()).prompt().unwrap(); // This is deliberate, until better error message
+        if select == "Solver" {
+            break;
+        }
+        colors = color_menu(colors);
+    }
 
     let tube_cap = CustomType::<usize>::new("What is the tube capacity?")
         .prompt()
