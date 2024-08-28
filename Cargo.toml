@@ -9,3 +9,5 @@ indicatif = "0.17.8"
 inquire = "0.7.5"
 itertools = "0.13.0"
 rayon = "1.10.0"
+serde = { version = "1.0.209", features = ["derive", "alloc"] }
+serde_json = { version = "1.0.127", features = ["alloc"] }

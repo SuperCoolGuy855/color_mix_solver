@@ -3,10 +3,11 @@ use std::fmt::{Display, Formatter};
 use std::hash::{Hash, Hasher};
 
 use colored::Colorize;
+use serde::{Deserialize, Serialize};
 
 use crate::Error;
 
-#[derive(Eq, PartialEq, Debug, Clone)]
+#[derive(Eq, PartialEq, Debug, Clone, Serialize, Deserialize)]
 pub struct Color {
     name: String,
     r: u8,
@@ -55,12 +56,7 @@ impl Hash for Color {
 
 impl Color {
     pub fn new(name: String, r: u8, g: u8, b: u8) -> Self {
-        Self {
-            name,
-            r,
-            g,
-            b,
-        }
+        Self { name, r, g, b }
     }
 }
 
@@ -72,12 +68,9 @@ pub struct Tube {
 
 impl Tube {
     pub fn new(capacity: usize, content: Vec<Color>) -> Self {
-        Self {
-            capacity,
-            content,
-        }
+        Self { capacity, content }
     }
-    
+
     fn is_full(&self) -> bool {
         self.content.len() >= self.capacity
     }
@@ -196,9 +189,7 @@ impl Display for GameState {
 
 impl GameState {
     pub fn new(tubes: Vec<Tube>) -> Self {
-        Self {
-            tubes,
-        }
+        Self { tubes }
     }
 
     pub fn tube_num(&self) -> usize {
@@ -206,7 +197,6 @@ impl GameState {
     }
 
     pub fn check_win(&self) -> bool {
-        // TODO: Check if this is correct
         for tube in &self.tubes {
             if tube.entropy() > 0.0 {
                 return false;

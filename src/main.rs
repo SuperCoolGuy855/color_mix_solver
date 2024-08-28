@@ -1,3 +1,5 @@
+use std::fs::File;
+
 use colored::Colorize;
 use inquire::{CustomType, Select, Text};
 use itertools::Itertools;
@@ -18,8 +20,27 @@ enum Error {
     InvalidMove(&'static str),
 }
 
-fn main() {
-    let mut colors = vec![];
+fn load_color() -> Option<Vec<Color>> {
+    let color_file = match File::open("colors.json") {
+        Ok(x) => x,
+        Err(e) => {
+            eprintln!("Unable to read colors file: {e}");
+            return None;
+        }
+    };
+
+    let colors: Vec<Color> = match serde_json::from_reader(color_file) {
+        Ok(x) => x,
+        Err(e) => {
+            eprintln!("Unable to parse file, possible corruption: {e}");
+            return None;
+        }
+    };
+
+    Some(colors)
+}
+
+fn color_menu(mut colors: Vec<Color>) -> Vec<Color> {
     let color_prompt: CustomType<(u8, u8, u8)> = CustomType {
         message: "Enter color's RGB values",
         starting_input: None,
@@ -40,7 +61,11 @@ fn main() {
         render_config: Default::default(),
     };
 
-    println!("Add color");
+    println!("Current colors:");
+    for color in &colors {
+        println!("{color}");
+    }
+
     loop {
         let res = color_prompt.clone().prompt_skippable().unwrap(); // This is deliberate, until better error message
         if res.is_none() {
@@ -54,13 +79,33 @@ fn main() {
                 let temp_color = Color::new(String::new(), r, g, b);
                 format!("{}", x.color(temp_color))
             })
+            .with_help_message("Enter name of existing color to override")
             .prompt()
             .unwrap(); // This is deliberate, until better error message
 
         let color = Color::new(color_name, r, g, b);
 
-        colors.push(color);
+        let exist_res = colors.iter().position(|x| x == &color);
+        match exist_res {
+            None => colors.push(color),
+            Some(x) => {
+                colors[x] = color;
+            }
+        }
     }
+
+    let color_file = File::create("colors.json")
+        .unwrap_or_else(|e| panic!("Unable to create colors file: {e}. Exiting"));
+    serde_json::to_writer(color_file, &colors)
+        .unwrap_or_else(|e| panic!("Unable to write json to colors file: {e}. Exiting")); // This is deliberate, until better error message
+
+    colors
+}
+
+fn main() {
+    // TODO: If found, show main menu
+
+    let colors = load_color().unwrap_or_else(|| color_menu(vec![]));
 
     let tube_cap = CustomType::<usize>::new("What is the tube capacity?")
         .prompt()
