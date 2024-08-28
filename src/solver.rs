@@ -125,6 +125,9 @@ pub fn display_solution(moves: Vec<(usize, usize)>, mut game_state: GameState) {
 
         game_state
             .make_move_in_place(from, to)
-            .expect("The moves input should be correct. If not, the solver is wrong");
+            .expect("The input move should be correct. If not, the solver is wrong");
     }
+
+    println!("Final state:");
+    println!("{game_state}");
 }
